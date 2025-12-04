@@ -6,17 +6,17 @@ export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState(null);
 
-  // ✅ FIX: Variable name is now consistently 'isLoading'
+  // ✅ CORRECT VARIABLE NAME
   const [isLoading, setIsLoading] = useState(true);
 
   const [uploading, setUploading] = useState(false);
   const [myProperties, setMyProperties] = useState([]);
 
-  // ⚠️ YOUR CLOUDINARY KEYS
+  // ⚠️ YOUR CLOUDINARY KEYS (Fixed spaces issue)
   const CLOUD_NAME = "dfrwxf1pg";
-  const UPLOAD_PRESET = "student housing platform";
+  const UPLOAD_PRESET = "student_housing_platform"; // Replaced spaces with underscores
 
-  // ⚠️ API URL
+  // ⚠️ API URL (Double check this is your correct Render name!)
   const API_URL = "https://student-housing-platform.onrender.com";
 
   const [form, setForm] = useState({
@@ -39,8 +39,10 @@ export default function Dashboard() {
     try {
       const res = await fetch(`${API_URL}/api/properties`);
       const data = await res.json();
-      const myHouses = data.filter(house => house.landlordId === userId);
-      setMyProperties(myHouses);
+      if (Array.isArray(data)) {
+        const myHouses = data.filter(house => house.landlordId === userId);
+        setMyProperties(myHouses);
+      }
     } catch (err) {
       console.error("Error fetching properties");
     }
@@ -85,7 +87,7 @@ export default function Dashboard() {
       const data = await res.json();
       setForm({ ...form, images: data.secure_url });
     } catch (error) {
-      alert("Upload failed");
+      alert("Upload failed. Check your Cloudinary preset settings.");
     } finally {
       setUploading(false);
     }
@@ -116,7 +118,7 @@ export default function Dashboard() {
     }
   };
 
-  // ✅ THIS LINE CAUSED THE ERROR BEFORE (It needs isLoading to be defined)
+  // ✅ THIS IS THE CRITICAL FIX
   if (isLoading) return <div className="p-10 text-center">Loading Dashboard...</div>;
 
   return (
