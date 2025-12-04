@@ -28,8 +28,30 @@ export default function Home() {
     fetchProperties();
   }, []);
 
-  const handleSearch = () => {
-    alert(`Searching for houses in ${search.location}... (Search is coming in V2!)`);
+ // ✅ REAL SEARCH FUNCTION
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      // Create the URL with query parameters (e.g. ?location=Yaba&maxPrice=200000)
+      const queryParams = new URLSearchParams();
+      if (search.location) queryParams.append("location", search.location);
+      if (search.maxPrice) queryParams.append("maxPrice", search.maxPrice);
+
+      const res = await fetch(`${API_URL}/api/properties?${queryParams.toString()}`);
+      const data = await res.json();
+      
+      if (Array.isArray(data)) {
+        setProperties(data);
+        if (data.length === 0) {
+          alert("No houses found matching your search. Try adjusting the filters.");
+        }
+      }
+    } catch (error) {
+      console.error("Search failed:", error);
+      alert("Something went wrong with the search.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
