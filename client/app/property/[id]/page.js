@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import dynamic from "next/dynamic"; // 1. Import Dynamic
+import dynamic from "next/dynamic";
 
-// 2. Load Paystack ONLY on the client (Fixes 'window is not defined')
+// 1. Load Paystack ONLY on the client
 const PaystackButton = dynamic(
   () => import("react-paystack").then((mod) => mod.PaystackButton),
   { ssr: false }
@@ -16,8 +16,11 @@ export default function PropertyDetails() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
+  // ⚠️ LIVE API URL
+  const API_URL = "https://student-housing-platform.onrender.com";
+
   // ⚠️ PASTE YOUR PAYSTACK PUBLIC KEY HERE
-  const publicKey = "pk_test_1b56ed2843f62835f5c3e40f3f6c47a9620b62d9";
+  const publicKey = "pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"; 
 
   useEffect(() => {
     // Check if user is logged in
@@ -28,7 +31,7 @@ export default function PropertyDetails() {
 
     const fetchProperty = async () => {
       try {
-        const res = await fetch(`https://student-housing-platform.onrender.com/api/properties/${id}`);
+        const res = await fetch(`${API_URL}/api/properties/${id}`);
         const data = await res.json();
         if (res.ok) {
           setProperty(data);
@@ -43,28 +46,30 @@ export default function PropertyDetails() {
     if (id) fetchProperty();
   }, [id]);
 
-  // Helper: Save to DB after payment
   const handleSuccess = async (reference) => {
     try {
-      const res = await fetch("https://student-housing-platform.onrender.com/api/bookings", {
+      const res = await fetch(`${API_URL}/api/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           studentId: user.id,
           propertyId: property.id,
-          price: 2000,
+          price: 2000, 
         }),
       });
 
       if (res.ok) {
         alert("✅ Payment Successful! Redirecting to your ticket...");
-        window.location.href = "/bookings";
+        window.location.href = "/bookings"; 
       }
     } catch (error) {
       console.error("Saving booking failed", error);
       alert("Payment successful, but failed to save receipt.");
     }
   };
+
+  if (loading) return <div className="p-10 text-center">Loading House Details...</div>;
+  if (!property) return <div className="p-10 text-center">House not found.</div>;
 
   const amount = 2000 * 100; // ₦2,000 in Kobo
 
@@ -80,9 +85,6 @@ export default function PropertyDetails() {
     onSuccess: (reference) => handleSuccess(reference),
     onClose: () => alert("Payment cancelled."),
   };
-
-  if (loading) return <div className="p-10 text-center">Loading House Details...</div>;
-  if (!property) return <div className="p-10 text-center">House not found.</div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,9 +103,9 @@ export default function PropertyDetails() {
         </div>
 
         {/* Image */}
-        <img
-          src={property.images}
-          alt={property.title}
+        <img 
+          src={property.images} 
+          alt={property.title} 
           className="w-full h-96 object-cover rounded-xl mb-8"
         />
 
@@ -114,11 +116,14 @@ export default function PropertyDetails() {
               <h2 className="text-xl font-bold text-gray-800 mb-2">Description</h2>
               <p className="text-gray-600 leading-relaxed">{property.description}</p>
             </div>
+            
+            {/* AMENITIES SECTION WAS HERE - NOW REMOVED */}
+          </div>
 
           {/* Sidebar / Payment Card */}
           <div className="bg-gray-50 p-6 rounded-xl border h-fit">
             <p className="text-gray-500 mb-1">Rent per year</p>
-            <p className="text-3xl font-bold text-green-600 mb-6">₦{property.price.toLocaleString()}</p>
+            <p className="text-3xl font-bold text-green-600 mb-6">₦{parseInt(property.price).toLocaleString()}</p>
 
             <div className="space-y-4">
               {/* Landlord Info */}
@@ -128,7 +133,7 @@ export default function PropertyDetails() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-gray-900">{property.landlord?.fullName || "Landlord"}</p>
-
+                  
                   {property.landlord?.isVerified ? (
                     <p className="text-xs text-green-600 font-bold flex items-center gap-1">✅ Verified Owner</p>
                   ) : (
@@ -137,21 +142,22 @@ export default function PropertyDetails() {
                 </div>
               </div>
 
-              {/* PAYSTACK BUTTON (Now loaded dynamically) */}
+              {/* PAYSTACK BUTTON */}
               {user ? (
-                <PaystackButton
-                  className="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition"
-                  {...componentProps}
+                <PaystackButton 
+                  className="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition" 
+                  {...componentProps} 
                 />
               ) : (
-                <button
-                  onClick={() => alert("Please Login to Book")}
-                  className="w-full bg-gray-400 text-white font-bold py-3 rounded-lg"
-                >
-                  Login to Book
-                </button>
+                <Link href="/login">
+                    <button 
+                    className="w-full bg-gray-400 text-white font-bold py-3 rounded-lg"
+                    >
+                    Login to Book
+                    </button>
+                </Link>
               )}
-
+              
               <button className="w-full border border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-100 transition">
                 Contact Landlord
               </button>
