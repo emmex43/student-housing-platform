@@ -104,8 +104,7 @@ app.post("/api/properties", async (req, res) => {
         university,
         location,
         address: location, // Using location as address for simplicity
-        images: images || "https://placehold.co/600x400", // Default image if none provided
-        amenities: "WiFi,Water", // Default amenities for now
+        images: images || "https://placehold.co/600x400", // Default image if none provide
         landlordId,
       },
     });
