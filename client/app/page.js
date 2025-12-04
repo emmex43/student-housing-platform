@@ -5,17 +5,22 @@ import Link from "next/link";
 export default function Home() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState({ location: "", maxPrice: "" });
 
-  // FETCH REAL DATA WHEN PAGE LOADS
+  // ⚠️ LIVE API URL
+  const API_URL = "https://student-housing-platform.onrender.com";
+
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const res = await fetch("https://student-housing-platform.onrender.com/api/properties");
+        const res = await fetch(`${API_URL}/api/properties`);
         const data = await res.json();
-        setProperties(data);
-        setLoading(false);
+        if (Array.isArray(data)) {
+          setProperties(data);
+        }
       } catch (error) {
-        console.error("Error fetching properties:", error);
+        console.error("Error loading properties:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -23,98 +28,99 @@ export default function Home() {
     fetchProperties();
   }, []);
 
+  // ✅ THIS WAS MISSING! (The Search Function)
+  const handleSearch = () => {
+    alert(`Searching for houses in ${search.location}... (Search is coming in V2!)`);
+  };
+
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="w-full p-6 flex justify-between items-center bg-white shadow-sm fixed top-0 z-10">
-        <h1 className="text-2xl font-bold text-green-600">StudentLodge.ng</h1>
+    <div className="min-h-screen bg-gray-50 font-sans">
+      {/* Navigation */}
+      <nav className="flex justify-between items-center p-6 bg-white shadow-sm sticky top-0 z-50">
+        <div className="text-2xl font-bold text-green-600">StudentLodge.ng</div>
         <div className="space-x-4">
-          <Link href="/login" className="text-gray-600 hover:text-green-600 font-medium">
-            Log In
+          <Link href="/login">
+            <button className="text-gray-600 hover:text-green-600 font-bold transition">Login</button>
           </Link>
-          <Link href="/register" className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-            Sign Up
+          <Link href="/register">
+            <button className="bg-green-600 text-white px-5 py-2 rounded-full font-bold shadow-md hover:bg-green-700 hover:-translate-y-0.5 transition-all">
+              Get Started
+            </button>
           </Link>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <div className="pt-32 pb-12 px-4 text-center bg-white">
-        <h1 className="text-5xl font-extrabold text-gray-900 mb-6">
-          Find your perfect <span className="text-green-600">student home</span>.
+      <header className="bg-green-600 text-white p-10 md:p-20 text-center shadow-lg">
+        <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
+          Find Your Perfect <span className="text-yellow-300">Student Lodge</span>
         </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          Verified hostels and apartments near UNILAG, LASU, and UNIBEN.
-        </p>
+        <p className="text-xl mb-10 opacity-90">Secure, affordable, and close to campus.</p>
 
         {/* Search Bar */}
-        <div className="bg-white p-4 rounded-2xl shadow-lg max-w-3xl mx-auto flex flex-col md:flex-row gap-4 border border-gray-100">
+        <div className="bg-white p-4 rounded-xl shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
           <input
-            type="text"
-            placeholder="Type your University (e.g. Unilag)"
-            className="flex-1 p-4 outline-none text-gray-700 placeholder-gray-400
-             focus:ring-2 focus:ring-green-500 focus:bg-green-50 transition-all"
+            placeholder="Where do you want to live? (e.g. Akoka)"
+            className="flex-1 p-4 rounded-lg text-gray-900 border-2 border-transparent focus:border-green-500 focus:bg-green-50 outline-none transition"
+            onChange={(e) => setSearch({ ...search, location: e.target.value })}
+          />
+          <input
+            placeholder="Max Price (₦)"
+            type="number"
+            className="w-full md:w-48 p-4 rounded-lg text-gray-900 border-2 border-transparent focus:border-green-500 focus:bg-green-50 outline-none transition"
+            onChange={(e) => setSearch({ ...search, maxPrice: e.target.value })}
           />
           <button
             onClick={handleSearch}
-            className="bg-green-600 text-white px-8 py-4 font-bold 
-             hover:bg-green-700 active:scale-95 active:bg-green-800 
-             transition-all duration-200"
+            className="bg-green-800 text-white px-8 py-4 rounded-lg font-bold shadow-lg hover:bg-green-900 active:scale-95 transition-all"
           >
             Search
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* 🏡 REAL PROPERTIES SECTION */}
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      {/* Property Grid */}
+      <main className="max-w-7xl mx-auto p-6 md:p-10">
         <h2 className="text-3xl font-bold text-gray-800 mb-8">Latest Hostels</h2>
 
         {loading ? (
-          <p className="text-center text-gray-500">Loading houses...</p>
+          <div className="text-center py-20 text-gray-500 text-xl">Loading available houses...</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {properties.length === 0 ? (
-              <p className="text-gray-500 col-span-3 text-center">No houses posted yet. Be the first!</p>
-            ) : (
-              properties.map((property) => (
-                <div key={property.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition">
-                  {/* Image */}
+            {properties.map((property) => (
+              <div key={property.id} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 group">
+                {/* Image with Zoom Effect */}
+                <div className="h-64 overflow-hidden relative">
                   <img
                     src={property.images}
                     alt={property.title}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-
-                  {/* Content */}
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">
-                        {property.university}
-                      </span>
-                      <span className="text-gray-500 text-sm">{property.location}</span>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{property.title}</h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {property.description}
-                    </p>
-
-                    <div className="flex justify-between items-center border-t pt-4">
-                      <span className="text-2xl font-bold text-green-600">
-                        ₦{property.price.toLocaleString()}
-                      </span>
-                      <Link href={`/property/${property.id}`} className="text-green-600 font-semibold border border-green-600 px-4 py-2 rounded-lg hover:bg-green-50 inline-block">
-                        View Details
-                      </Link>
-                    </div>
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-green-700 shadow-sm">
+                    {property.university}
                   </div>
                 </div>
-              ))
-            )}
+
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-xl font-bold text-gray-900 leading-tight">{property.title}</h3>
+                    <p className="text-green-600 font-extrabold text-lg">₦{parseInt(property.price).toLocaleString()}</p>
+                  </div>
+                  <p className="text-gray-500 text-sm mb-4 flex items-center gap-1">
+                    📍 {property.location}
+                  </p>
+
+                  <Link href={`/property/${property.id}`}>
+                    <button className="w-full bg-green-50 text-green-700 font-bold py-3 rounded-xl hover:bg-green-600 hover:text-white active:scale-95 transition-all">
+                      View Details
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
         )}
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
