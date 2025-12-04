@@ -70,7 +70,13 @@ export default function Login() {
             required
           />
 
-          <button className="w-full bg-green-600 text-white p-3 rounded-lg font-bold hover:bg-green-700 transition">
+         // In Login and Register pages:
+          <button
+            className="w-full bg-green-600 text-white p-3 rounded-lg font-bold shadow-md 
+             hover:bg-green-700 hover:-translate-y-0.5 
+             active:scale-95 active:bg-green-800 
+             transition-all duration-200"
+          >
             Log In
           </button>
         </form>

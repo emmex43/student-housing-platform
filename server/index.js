@@ -218,7 +218,32 @@ app.get("/api/bookings/:userId", async (req, res) => {
     res.status(500).json({ message: "Error fetching bookings" });
   }
 });
+// 11. MARK AS TAKEN / AVAILABLE
+app.put("/api/properties/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { available } = req.body; // true or false
 
+    const updated = await prisma.property.update({
+      where: { id },
+      data: { isAvailable: available },
+    });
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating status" });
+  }
+});
+
+// 12. DELETE PROPERTY
+app.delete("/api/properties/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.property.delete({ where: { id } });
+    res.json({ message: "Property deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting property" });
+  }
+});
 
 // Start Server
 app.listen(PORT, () => {

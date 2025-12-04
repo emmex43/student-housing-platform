@@ -44,7 +44,7 @@ export default function Home() {
           Find your perfect <span className="text-green-600">student home</span>.
         </h1>
         <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          Verified hostels and apartments near Unilag, LASU, and UNIBEN.
+          Verified hostels and apartments near UNILAG, LASU, and UNIBEN.
         </p>
 
         {/* Search Bar */}
@@ -52,9 +52,15 @@ export default function Home() {
           <input
             type="text"
             placeholder="Type your University (e.g. Unilag)"
-            className="flex-1 p-3 border border-gray-300 rounded-lg text-black"
+            className="flex-1 p-4 outline-none text-gray-700 placeholder-gray-400
+             focus:ring-2 focus:ring-green-500 focus:bg-green-50 transition-all"
           />
-          <button className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold">
+          <button
+            onClick={handleSearch}
+            className="bg-green-600 text-white px-8 py-4 font-bold 
+             hover:bg-green-700 active:scale-95 active:bg-green-800 
+             transition-all duration-200"
+          >
             Search
           </button>
         </div>
