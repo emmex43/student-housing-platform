@@ -69,8 +69,7 @@ export default function Login() {
             className="w-full p-3 border rounded-lg text-black"
             required
           />
-
-         // In Login and Register pages:
+      
           <button
             className="w-full bg-green-600 text-white p-3 rounded-lg font-bold shadow-md 
              hover:bg-green-700 hover:-translate-y-0.5 
