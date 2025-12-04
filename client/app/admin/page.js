@@ -12,16 +12,16 @@ export default function AdminPanel() {
   }, []);
 
   const fetchUsers = async () => {
-    const res = await fetch("http://localhost:5000/api/users");
+    const res = await fetch("https://student-housing-platform.onrender.com/api/users");
     const data = await res.json();
     setUsers(data);
   };
 
   const handleVerify = async (userId) => {
-    const res = await fetch(`http://localhost:5000/api/users/${userId}/verify`, {
+    const res = await fetch(`https://student-housing-platform.onrender.com/api/users/${userId}/verify`, {
       method: "PUT",
     });
-    
+
     if (res.ok) {
       alert("✅ User Verified!");
       fetchUsers(); // Refresh the list
@@ -63,7 +63,7 @@ export default function AdminPanel() {
                   </td>
                   <td className="p-4">
                     {!user.isVerified && user.role === 'LANDLORD' && (
-                      <button 
+                      <button
                         onClick={() => handleVerify(user.id)}
                         className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm"
                       >

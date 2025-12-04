@@ -10,7 +10,7 @@ export default function Home() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/properties");
+        const res = await fetch("https://student-housing-platform.onrender.com/api/properties");
         const data = await res.json();
         setProperties(data);
         setLoading(false);
@@ -49,9 +49,9 @@ export default function Home() {
 
         {/* Search Bar */}
         <div className="bg-white p-4 rounded-2xl shadow-lg max-w-3xl mx-auto flex flex-col md:flex-row gap-4 border border-gray-100">
-          <input 
-            type="text" 
-            placeholder="Type your University (e.g. Unilag)" 
+          <input
+            type="text"
+            placeholder="Type your University (e.g. Unilag)"
             className="flex-1 p-3 border border-gray-300 rounded-lg text-black"
           />
           <button className="bg-green-600 text-white px-8 py-3 rounded-lg font-bold">
@@ -74,12 +74,12 @@ export default function Home() {
               properties.map((property) => (
                 <div key={property.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition">
                   {/* Image */}
-                  <img 
-                    src={property.images} 
-                    alt={property.title} 
-                    className="w-full h-48 object-cover" 
+                  <img
+                    src={property.images}
+                    alt={property.title}
+                    className="w-full h-48 object-cover"
                   />
-                  
+
                   {/* Content */}
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-2">
@@ -99,8 +99,8 @@ export default function Home() {
                         ₦{property.price.toLocaleString()}
                       </span>
                       <Link href={`/property/${property.id}`} className="text-green-600 font-semibold border border-green-600 px-4 py-2 rounded-lg hover:bg-green-50 inline-block">
-  View Details
-</Link>
+                        View Details
+                      </Link>
                     </div>
                   </div>
                 </div>

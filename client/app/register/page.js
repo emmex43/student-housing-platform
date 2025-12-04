@@ -13,8 +13,8 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const response = await fetch("http://localhost:5000/api/register", {
+
+    const response = await fetch("https://student-housing-platform.onrender.com/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -34,7 +34,7 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Create Account</h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             name="fullName"
@@ -43,7 +43,7 @@ export default function Register() {
             className="w-full p-3 border rounded-lg text-black"
             required
           />
-          
+
           {/* NEW PHONE INPUT */}
           <input
             name="phone"
@@ -70,7 +70,7 @@ export default function Register() {
             className="w-full p-3 border rounded-lg text-black"
             required
           />
-          
+
           <select name="role" onChange={handleChange} className="w-full p-3 border rounded-lg text-black bg-white">
             <option value="STUDENT">I am a Student</option>
             <option value="LANDLORD">I am a Landlord</option>

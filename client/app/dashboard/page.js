@@ -82,7 +82,7 @@ export default function Dashboard() {
     const dataToSend = { ...form, landlordId: user.id };
 
     try {
-      const response = await fetch("http://localhost:5000/api/properties", {
+      const response = await fetch("https://student-housing-platform.onrender.com/api/properties", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dataToSend),

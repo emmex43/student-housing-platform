@@ -14,7 +14,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/login", {
+      const response = await fetch("https://student-housing-platform.onrender.com/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -26,9 +26,9 @@ export default function Login() {
         // 1. Save the token and user data
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        
+
         alert("Welcome back, " + data.user.fullName + "!");
-        
+
         // 2. SMART REDIRECT LOGIC
         if (data.user.role === "LANDLORD") {
           router.push("/dashboard"); // Landlords go to Dashboard
@@ -37,7 +37,7 @@ export default function Login() {
         } else {
           router.push("/");          // Students go to Homepage
         }
-        
+
       } else {
         alert(data.message);
       }
@@ -51,7 +51,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Login</h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             name="email"
@@ -69,7 +69,7 @@ export default function Login() {
             className="w-full p-3 border rounded-lg text-black"
             required
           />
-          
+
           <button className="w-full bg-green-600 text-white p-3 rounded-lg font-bold hover:bg-green-700 transition">
             Log In
           </button>

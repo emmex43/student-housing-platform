@@ -28,7 +28,7 @@ export default function PropertyDetails() {
 
     const fetchProperty = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/properties/${id}`);
+        const res = await fetch(`https://student-housing-platform.onrender.com/api/properties/${id}`);
         const data = await res.json();
         if (res.ok) {
           setProperty(data);
@@ -46,7 +46,7 @@ export default function PropertyDetails() {
   // Helper: Save to DB after payment
   const handleSuccess = async (reference) => {
     try {
-      const res = await fetch("http://localhost:5000/api/bookings", {
+      const res = await fetch("https://student-housing-platform.onrender.com/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
