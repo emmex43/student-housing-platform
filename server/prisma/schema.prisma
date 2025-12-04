@@ -41,7 +41,6 @@ model Property {
   // SQLite Fix: Changed from String[] to simple String
   // We will store multiple items separated by commas (e.g. "WiFi, Water, Gen")
   images      String   
-  amenities   String   
   
   isAvailable Boolean  @default(true)
   
@@ -65,7 +64,7 @@ model Booking {
   studentId String
   student   User     @relation(fields: [studentId], references: [id])
   propertyId String
-  property  Property @relation(fields: [propertyId], references: [id])
+ property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
 // 4. Reviews
