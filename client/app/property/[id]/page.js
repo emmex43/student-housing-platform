@@ -20,7 +20,7 @@ export default function PropertyDetails() {
   const API_URL = "https://student-housing-platform.onrender.com";
 
   // ⚠️ PASTE YOUR PAYSTACK PUBLIC KEY HERE
-  const publicKey = "pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"; 
+  const publicKey = "pk_test_1b56ed2843f62835f5c3e40f3f6c47a9620b62d9"; 
 
   useEffect(() => {
     // Check if user is logged in
