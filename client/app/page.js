@@ -34,11 +34,30 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Navigation */}
-      <nav className="flex justify-between items-center p-6 bg-white shadow-sm sticky top-0 z-50">
-        <div className="text-2xl font-bold text-green-600">StudentLodge.ng</div>
-        <div className="space-x-4">
+    {/* Navigation - Responsive */}
+      <nav className="flex justify-between items-center p-4 md:p-6 bg-white shadow-sm sticky top-0 z-50">
+        
+        {/* 1. Logo (Smaller on mobile) */}
+        <div className="text-xl md:text-2xl font-bold text-green-600">
+          StudentLodge<span className="hidden md:inline">.ng</span> {/* Hide .ng on tiny screens if needed */}
+        </div>
+
+        {/* 2. Mobile Menu (Visible only on small screens) */}
+        <div className="md:hidden flex gap-2">
+           <Link href="/login">
+             <button className="text-sm font-bold text-gray-600 border border-gray-300 px-3 py-1 rounded-lg">
+               Login
+             </button>
+           </Link>
+           <Link href="/register">
+             <button className="text-sm font-bold bg-green-600 text-white px-3 py-1 rounded-lg">
+               Join
+             </button>
+           </Link>
+        </div>
+
+        {/* 3. Desktop Menu (Hidden on mobile) */}
+        <div className="hidden md:flex space-x-4">
           <Link href="/login">
             <button className="text-gray-600 hover:text-green-600 font-bold transition">Login</button>
           </Link>
