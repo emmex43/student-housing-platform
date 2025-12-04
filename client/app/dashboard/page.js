@@ -14,7 +14,7 @@ export default function Dashboard() {
 
   // ⚠️ YOUR CLOUDINARY KEYS (Fixed spaces issue)
   const CLOUD_NAME = "dfrwxf1pg";
-  const UPLOAD_PRESET = "student_housing_platform"; // Replaced spaces with underscores
+  const UPLOAD_PRESET = "student housing platform"; // Remove underscores
 
   // ⚠️ API URL (Double check this is your correct Render name!)
   const API_URL = "https://student-housing-platform.onrender.com";
