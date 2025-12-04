@@ -117,15 +117,48 @@ app.post("/api/properties", async (req, res) => {
   }
 });
 
-// 5. GET ALL PROPERTIES ROUTE (For the Student Search Page)
+// 3. GET ALL PROPERTIES (With Search Filters!)
 app.get("/api/properties", async (req, res) => {
   try {
+    const { location, maxPrice, university } = req.query;
+
+    // Build the filter object dynamically
+    let filter = {};
+
+    // If user typed a location, search for it (case insensitive)
+    if (location) {
+      filter.location = {
+        contains: location,
+        mode: "insensitive", 
+      };
+    }
+
+    // If user typed a max price, find houses cheaper than that
+    if (maxPrice) {
+      filter.price = {
+        lte: parseFloat(maxPrice), // lte = "Less Than or Equal"
+      };
+    }
+
+    // If user selected a university
+    if (university) {
+      filter.university = {
+        equals: university,
+      };
+    }
+
     const properties = await prisma.property.findMany({
-      include: { landlord: true }, // Also fetch the landlord's name
+      where: filter, // Apply the smart filter
+      include: { 
+        landlord: {
+          select: { fullName: true, isVerified: true }
+        }
+      },
     });
+
     res.json(properties);
   } catch (error) {
-    res.status(500).json({ message: "Could not fetch properties" });
+    res.status(500).json({ message: "Error fetching properties" });
   }
 });
 
