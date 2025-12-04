@@ -1,0 +1,80 @@
+// server/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// 1. The Users
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  fullName  String
+  phone     String?
+  
+  // SQLite Fix: Changed from Enum to String
+  role      String   @default("STUDENT") 
+  
+  createdAt DateTime @default(now())
+  
+  properties Property[]
+  bookings   Booking[]
+  reviews    Review[]
+}
+
+// 2. The Properties
+model Property {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  price       Float
+  university  String
+  location    String
+  address     String
+  
+  // SQLite Fix: Changed from String[] to simple String
+  // We will store multiple items separated by commas (e.g. "WiFi, Water, Gen")
+  images      String   
+  amenities   String   
+  
+  isAvailable Boolean  @default(true)
+  
+  landlordId  String
+  landlord    User      @relation(fields: [landlordId], references: [id])
+  bookings    Booking[]
+  reviews     Review[]
+}
+
+// 3. The Bookings
+model Booking {
+  id        String   @id @default(uuid())
+  startDate DateTime
+  endDate   DateTime
+  
+  // SQLite Fix: Changed from Enum to String
+  status    String   @default("PENDING") 
+  
+  totalPrice Float
+  
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id])
+  propertyId String
+  property  Property @relation(fields: [propertyId], references: [id])
+}
+
+// 4. Reviews
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int      
+  comment   String
+  
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id])
+  propertyId String
+  property  Property @relation(fields: [propertyId], references: [id])
+}
