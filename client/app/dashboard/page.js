@@ -140,9 +140,16 @@ export default function Dashboard() {
               <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="Price (₦)" className="w-full p-3 border rounded" required />
               <select name="university" value={form.university} onChange={handleChange} className="w-full p-3 border rounded bg-white" required>
                 <option value="">Select University</option>
-                <option value="Unilag">Unilag</option>
+                <option value="UNILAG">UNILAG</option>
                 <option value="LASU">LASU</option>
                 <option value="UNIBEN">UNIBEN</option>
+                <option value="OAU">OAU</option>
+                <option value="UNN">UNN</option>
+                <option value="UI">UNIBADAN</option>
+                <option value="UNILORIN">UNILORIN</option>
+                <option value="FUTA">FUTA</option>
+                <option value="FUNAAB">FUNAAB</option>
+                <option value="OOU">OOU</option>
               </select>
             </div>
             <input name="location" value={form.location} onChange={handleChange} placeholder="Address" className="w-full p-3 border rounded" required />
