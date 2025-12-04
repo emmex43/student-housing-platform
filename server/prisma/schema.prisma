@@ -16,9 +16,10 @@ model User {
   password  String
   fullName  String
   phone     String?
+  role      String   @default("STUDENT") // STUDENT, LANDLORD, ADMIN
   
-  // SQLite Fix: Changed from Enum to String
-  role      String   @default("STUDENT") 
+  // NEW FIELD: Verification Status
+  isVerified Boolean @default(false) 
   
   createdAt DateTime @default(now())
   

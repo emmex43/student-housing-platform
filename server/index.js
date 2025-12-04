@@ -19,40 +19,30 @@ app.get("/", (req, res) => {
   res.send("Student Housing API is running!");
 });
 
-// 2. REGISTER ROUTE
+// 2. REGISTER ROUTE (Updated to save Phone Number)
 app.post("/api/register", async (req, res) => {
   try {
-    const { email, password, fullName, role } = req.body;
-    console.log("📝 Register attempt:", email);
+    // 1. Get phone from the request
+    const { email, password, fullName, role, phone } = req.body; 
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) return res.status(400).json({ message: "User already exists" });
 
-    if (existingUser) {
-      console.log("❌ User already exists");
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save to Database
     const newUser = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         fullName,
+        phone, // 2. Save it to the database
         role: role || "STUDENT",
       },
     });
 
-    console.log("✅ User created:", newUser.email);
     res.status(201).json({ message: "User created successfully!", user: newUser });
-
   } catch (error) {
-    console.error("❌ Registration Error:", error);
+    console.error(error);
     res.status(500).json({ message: "Something went wrong" });
   }
 });
@@ -159,6 +149,77 @@ app.get("/api/properties/:id", async (req, res) => {
     res.status(500).json({ message: "Could not fetch property" });
   }
 });
+
+// 7. ADMIN: GET ALL USERS
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users" });
+  }
+});
+
+// 8. ADMIN: VERIFY A USER
+app.put("/api/users/:id/verify", async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { isVerified: true },
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Could not verify user" });
+  }
+});
+
+// 9. CREATE BOOKING ROUTE (Save payment info)
+app.post("/api/bookings", async (req, res) => {
+  try {
+    const { studentId, propertyId, price } = req.body;
+
+    const newBooking = await prisma.booking.create({
+      data: {
+        studentId,
+        propertyId,
+        totalPrice: parseFloat(price),
+        startDate: new Date(), // For now, just mark today as the viewing date
+        endDate: new Date(),
+        status: "CONFIRMED",   // Because they just paid via Paystack
+      },
+    });
+
+    res.status(201).json(newBooking);
+  } catch (error) {
+    console.error("Booking Error:", error);
+    res.status(500).json({ message: "Could not save booking" });
+  }
+});
+
+// 10. GET MY BOOKINGS (With Landlord Phone Number)
+app.get("/api/bookings/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const bookings = await prisma.booking.findMany({
+      where: { studentId: userId },
+      include: { 
+        property: {
+          include: { 
+            landlord: true // <--- THIS is the magic line. Get the owner details!
+          }
+        } 
+      }, 
+    });
+    res.json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching bookings" });
+  }
+});
+
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

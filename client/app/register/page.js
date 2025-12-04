@@ -1,10 +1,10 @@
-// client/app/register/page.js
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Register() {
-  const [form, setForm] = useState({ fullName: "", email: "", password: "", role: "STUDENT" });
+  // Added "phone" to the state
+  const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "", role: "STUDENT" });
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -14,7 +14,6 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Send data to our Backend API
     const response = await fetch("http://localhost:5000/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -24,8 +23,8 @@ export default function Register() {
     const data = await response.json();
 
     if (response.ok) {
-      alert("Registration Successful!");
-      router.push("/"); // Go back to homepage
+      alert("Registration Successful! Please Login.");
+      router.push("/login");
     } else {
       alert(data.message);
     }
@@ -44,6 +43,17 @@ export default function Register() {
             className="w-full p-3 border rounded-lg text-black"
             required
           />
+          
+          {/* NEW PHONE INPUT */}
+          <input
+            name="phone"
+            type="tel"
+            placeholder="Phone Number (e.g. 08012345678)"
+            onChange={handleChange}
+            className="w-full p-3 border rounded-lg text-black"
+            required
+          />
+
           <input
             name="email"
             type="email"
