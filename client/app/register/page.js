@@ -75,8 +75,7 @@ export default function Register() {
             <option value="STUDENT">I am a Student</option>
             <option value="LANDLORD">I am a Landlord</option>
           </select>
-
-          // In Login and Register pages:
+              
           <button
             className="w-full bg-green-600 text-white p-3 rounded-lg font-bold shadow-md 
              hover:bg-green-700 hover:-translate-y-0.5 
