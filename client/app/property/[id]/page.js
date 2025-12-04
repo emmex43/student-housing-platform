@@ -115,18 +115,6 @@ export default function PropertyDetails() {
               <p className="text-gray-600 leading-relaxed">{property.description}</p>
             </div>
 
-            <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Amenities</h2>
-              <div className="flex gap-2">
-                {property.amenities.split(",").map((item, index) => (
-                  <span key={index} className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
           {/* Sidebar / Payment Card */}
           <div className="bg-gray-50 p-6 rounded-xl border h-fit">
             <p className="text-gray-500 mb-1">Rent per year</p>
