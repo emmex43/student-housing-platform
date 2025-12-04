@@ -28,18 +28,18 @@ export default function Home() {
     fetchProperties();
   }, []);
 
-  // ✅ THIS WAS MISSING! (The Search Function)
   const handleSearch = () => {
     alert(`Searching for houses in ${search.location}... (Search is coming in V2!)`);
   };
 
   return (
-    {/* Navigation - Responsive */}
+    <div className="min-h-screen bg-gray-50 font-sans">
+      {/* Navigation - Responsive */}
       <nav className="flex justify-between items-center p-4 md:p-6 bg-white shadow-sm sticky top-0 z-50">
         
         {/* 1. Logo (Smaller on mobile) */}
         <div className="text-xl md:text-2xl font-bold text-green-600">
-          StudentLodge<span className="hidden md:inline">.ng</span> {/* Hide .ng on tiny screens if needed */}
+          StudentLodge<span className="hidden md:inline">.ng</span>
         </div>
 
         {/* 2. Mobile Menu (Visible only on small screens) */}
@@ -108,7 +108,6 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {properties.map((property) => (
               <div key={property.id} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 group">
-                {/* Image with Zoom Effect */}
                 <div className="h-64 overflow-hidden relative">
                   <img
                     src={property.images}
