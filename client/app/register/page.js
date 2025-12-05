@@ -73,7 +73,7 @@ export default function Register() {
 
           <select name="role" onChange={handleChange} className="w-full p-3 border rounded-lg text-black bg-white">
             <option value="STUDENT">I am a Student</option>
-            <option value="LANDLORD">I am a Landlord</option>
+            <option value="LANDLORD">I am a Landlord / Agent</option>
           </select>
               
           <button
