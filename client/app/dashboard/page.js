@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link"; // ✅ Added Link for navigation
 
 export default function Dashboard() {
   const router = useRouter();
@@ -12,11 +13,11 @@ export default function Dashboard() {
   const [uploading, setUploading] = useState(false);
   const [myProperties, setMyProperties] = useState([]);
 
-  // ⚠️ YOUR CLOUDINARY KEYS (Fixed spaces issue)
+  // ⚠️ YOUR CLOUDINARY KEYS
   const CLOUD_NAME = "dfrwxf1pg";
-  const UPLOAD_PRESET = "student housing platform"; // Remove underscores
+  const UPLOAD_PRESET = "student housing platform"; 
 
-  // ⚠️ API URL (Double check this is your correct Render name!)
+  // ⚠️ API URL
   const API_URL = "https://student-housing-platform.onrender.com";
 
   const [form, setForm] = useState({
@@ -72,6 +73,12 @@ export default function Dashboard() {
     }
   };
 
+  // ✅ Logout Function
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    router.push("/login");
+  };
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleImageUpload = async (e) => {
@@ -118,11 +125,26 @@ export default function Dashboard() {
     }
   };
 
-  // ✅ THIS IS THE CRITICAL FIX
   if (isLoading) return <div className="p-10 text-center">Loading Dashboard...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
+      
+      {/* ✅ NAVIGATION BAR (Back to Home + Logout) */}
+      <nav className="max-w-4xl mx-auto flex justify-between items-center mb-8 bg-white p-4 rounded-lg shadow-sm">
+        <Link href="/">
+          <button className="text-green-600 font-bold hover:underline flex items-center gap-1">
+            ← Back to Home
+          </button>
+        </Link>
+        <div className="flex items-center gap-4">
+            <span className="text-gray-500 text-sm hidden md:inline">Welcome, {user?.fullName}</span>
+            <button onClick={handleLogout} className="text-red-500 font-bold hover:text-red-700 text-sm border border-red-200 px-3 py-1 rounded">
+            Logout
+            </button>
+        </div>
+      </nav>
+
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Property Manager Dashboard</h1>
 
@@ -138,6 +160,8 @@ export default function Dashboard() {
             <input name="title" value={form.title} onChange={handleChange} placeholder="Property Title" className="w-full p-3 border rounded" required />
             <div className="grid grid-cols-2 gap-4">
               <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="Price (₦)" className="w-full p-3 border rounded" required />
+              
+              {/* YOUR FULL UNIVERSITY LIST */}
               <select name="university" value={form.university} onChange={handleChange} className="w-full p-3 border rounded bg-white" required>
                 <option value="">Select University</option>
                 <option value="UNILAG">UNILAG</option>
