@@ -5,53 +5,44 @@ import Link from "next/link";
 export default function Home() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState({ location: "", maxPrice: "" });
+  
+  // ✅ Search State including University
+  const [search, setSearch] = useState({ location: "", maxPrice: "", university: "" });
 
   // ⚠️ LIVE API URL
   const API_URL = "https://student-housing-platform.onrender.com";
 
   useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/properties`);
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setProperties(data);
-        }
-      } catch (error) {
-        console.error("Error loading properties:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProperties();
   }, []);
 
- // ✅ REAL SEARCH FUNCTION
-  const handleSearch = async () => {
+  const fetchProperties = async (queryParams = "") => {
     setLoading(true);
     try {
-      // Create the URL with query parameters (e.g. ?location=Yaba&maxPrice=200000)
-      const queryParams = new URLSearchParams();
-      if (search.location) queryParams.append("location", search.location);
-      if (search.maxPrice) queryParams.append("maxPrice", search.maxPrice);
-
-      const res = await fetch(`${API_URL}/api/properties?${queryParams.toString()}`);
+      const res = await fetch(`${API_URL}/api/properties${queryParams}`);
       const data = await res.json();
-      
       if (Array.isArray(data)) {
         setProperties(data);
-        if (data.length === 0) {
+        if (queryParams && data.length === 0) {
           alert("No houses found matching your search. Try adjusting the filters.");
         }
       }
     } catch (error) {
-      console.error("Search failed:", error);
-      alert("Something went wrong with the search.");
+      console.error("Error loading properties:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ REAL SEARCH FUNCTION
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (search.location) params.append("location", search.location);
+    if (search.maxPrice) params.append("maxPrice", search.maxPrice);
+    if (search.university) params.append("university", search.university);
+
+    const queryString = "?" + params.toString();
+    fetchProperties(queryString);
   };
 
   return (
@@ -59,12 +50,12 @@ export default function Home() {
       {/* Navigation - Responsive */}
       <nav className="flex justify-between items-center p-4 md:p-6 bg-white shadow-sm sticky top-0 z-50">
         
-        {/* 1. Logo (Smaller on mobile) */}
+        {/* 1. Logo */}
         <div className="text-xl md:text-2xl font-bold text-green-600">
           StudentLodge<span className="hidden md:inline">.ng</span>
         </div>
 
-        {/* 2. Mobile Menu (Visible only on small screens) */}
+        {/* 2. Mobile Menu */}
         <div className="md:hidden flex gap-2">
            <Link href="/login">
              <button className="text-sm font-bold text-gray-600 border border-gray-300 px-3 py-1 rounded-lg">
@@ -78,7 +69,7 @@ export default function Home() {
            </Link>
         </div>
 
-        {/* 3. Desktop Menu (Hidden on mobile) */}
+        {/* 3. Desktop Menu */}
         <div className="hidden md:flex space-x-4">
           <Link href="/login">
             <button className="text-gray-600 hover:text-green-600 font-bold transition">Login</button>
@@ -92,25 +83,45 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <header className="bg-green-600 text-white p-10 md:p-20 text-center shadow-lg">
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
+      <header className="bg-green-600 text-white p-6 md:p-20 text-center shadow-lg">
+        <h1 className="text-3xl md:text-6xl font-extrabold mb-6">
           Find Your Perfect <span className="text-yellow-300">Student Lodge</span>
         </h1>
-        <p className="text-xl mb-10 opacity-90">Secure, affordable, and close to campus.</p>
+        <p className="text-lg md:text-xl mb-10 opacity-90">Secure, affordable, and close to campus.</p>
 
-        {/* Search Bar */}
-        <div className="bg-white p-4 rounded-xl shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4">
+        {/* Search Bar - Now with University Filter! */}
+        <div className="bg-white p-4 rounded-xl shadow-2xl max-w-5xl mx-auto flex flex-col md:flex-row gap-4">
+          
+          <select 
+            className="p-4 rounded-lg text-gray-900 border-2 border-transparent focus:border-green-500 focus:bg-green-50 outline-none transition bg-white"
+            onChange={(e) => setSearch({ ...search, university: e.target.value })}
+          >
+            <option value="">All Universities</option>
+            <option value="UNILAG">UNILAG</option>
+            <option value="LASU">LASU</option>
+            <option value="UNIBEN">UNIBEN</option>
+            <option value="OAU">OAU</option>
+            <option value="UNN">UNN</option>
+            <option value="UI">UNIBADAN</option>
+            <option value="UNILORIN">UNILORIN</option>
+            <option value="FUTA">FUTA</option>
+            <option value="FUNAAB">FUNAAB</option>
+            <option value="OOU">OOU</option>
+          </select>
+
           <input
-            placeholder="Where do you want to live? (e.g. Akoka)"
+            placeholder="Location (e.g. Akoka)"
             className="flex-1 p-4 rounded-lg text-gray-900 border-2 border-transparent focus:border-green-500 focus:bg-green-50 outline-none transition"
             onChange={(e) => setSearch({ ...search, location: e.target.value })}
           />
+          
           <input
             placeholder="Max Price (₦)"
             type="number"
-            className="w-full md:w-48 p-4 rounded-lg text-gray-900 border-2 border-transparent focus:border-green-500 focus:bg-green-50 outline-none transition"
+            className="w-full md:w-40 p-4 rounded-lg text-gray-900 border-2 border-transparent focus:border-green-500 focus:bg-green-50 outline-none transition"
             onChange={(e) => setSearch({ ...search, maxPrice: e.target.value })}
           />
+          
           <button
             onClick={handleSearch}
             className="bg-green-800 text-white px-8 py-4 rounded-lg font-bold shadow-lg hover:bg-green-900 active:scale-95 transition-all"
@@ -130,6 +141,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {properties.map((property) => (
               <div key={property.id} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 group">
+                {/* Image with Zoom Effect */}
                 <div className="h-64 overflow-hidden relative">
                   <img
                     src={property.images}
