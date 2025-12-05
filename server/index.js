@@ -117,15 +117,13 @@ app.post("/api/properties", async (req, res) => {
   }
 });
 
-// 3. GET ALL PROPERTIES (With Search Filters!)
+// 3. GET ALL PROPERTIES (Safe Mode - No Sorting)
 app.get("/api/properties", async (req, res) => {
   try {
     const { location, maxPrice, university } = req.query;
 
-    // Build the filter object dynamically
     let filter = {};
 
-    // If user typed a location, search for it (case insensitive)
     if (location) {
       filter.location = {
         contains: location,
@@ -133,14 +131,12 @@ app.get("/api/properties", async (req, res) => {
       };
     }
 
-    // If user typed a max price, find houses cheaper than that
     if (maxPrice) {
       filter.price = {
-        lte: parseFloat(maxPrice), // lte = "Less Than or Equal"
+        lte: parseFloat(maxPrice),
       };
     }
 
-    // If user selected a university
     if (university) {
       filter.university = {
         equals: university,
@@ -148,19 +144,18 @@ app.get("/api/properties", async (req, res) => {
     }
 
     const properties = await prisma.property.findMany({
-      where: filter, // Apply the smart filter
+      where: filter,
       include: { 
         landlord: {
           select: { fullName: true, isVerified: true }
         }
-      },
-      orderBy: {
-        createdAt: 'desc' // Show newest houses first
       }
+      // ❌ I REMOVED 'orderBy' TO PREVENT CRASHES
     });
 
     res.json(properties);
   } catch (error) {
+    console.error("Error fetching properties:", error); // ✅ Added console log for debugging
     res.status(500).json({ message: "Error fetching properties" });
   }
 });
