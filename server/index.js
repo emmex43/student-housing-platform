@@ -154,6 +154,9 @@ app.get("/api/properties", async (req, res) => {
           select: { fullName: true, isVerified: true }
         }
       },
+      orderBy: {
+        createdAt: 'desc' // Show newest houses first
+      }
     });
 
     res.json(properties);
