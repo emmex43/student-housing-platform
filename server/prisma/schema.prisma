@@ -6,29 +6,23 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") // <--- Back to the clean way!
+  url      = env("DATABASE_URL")
 }
 
-// 1. The Users
+// 1. The Admin (You)
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
   password  String
   fullName  String
-  phone     String?
-  role      String   @default("STUDENT") // STUDENT, LANDLORD, ADMIN
+  role      String     @default("ADMIN") 
+  createdAt DateTime   @default(now())
   
-  // NEW FIELD: Verification Status
-  isVerified Boolean @default(false) 
-  
-  createdAt DateTime @default(now())
-  
+  // The houses you post
   properties Property[]
-  bookings   Booking[]
-  reviews    Review[]
 }
 
-// 2. The Properties
+// 2. The Properties (Video Mode)
 model Property {
   id          String   @id @default(uuid())
   title       String
@@ -36,45 +30,14 @@ model Property {
   price       Float
   university  String
   location    String
-  address     String
   
-  // SQLite Fix: Changed from String[] to simple String
-  // We will store multiple items separated by commas (e.g. "WiFi, Water, Gen")
-  images      String   
+  // ✅ THE NEW AGENCY FIELDS
+  videoUrl    String   // Stores the YouTube link
+  agentNumber String   // Stores the specific agent's WhatsApp
   
   isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
   
   landlordId  String
-  landlord    User      @relation(fields: [landlordId], references: [id])
-  bookings    Booking[]
-  reviews     Review[]
-}
-
-// 3. The Bookings
-model Booking {
-  id        String   @id @default(uuid())
-  startDate DateTime
-  endDate   DateTime
-  
-  // SQLite Fix: Changed from Enum to String
-  status    String   @default("PENDING") 
-  
-  totalPrice Float
-  
-  studentId String
-  student   User     @relation(fields: [studentId], references: [id])
-  propertyId String
- property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-}
-
-// 4. Reviews
-model Review {
-  id        String   @id @default(uuid())
-  rating    Int      
-  comment   String
-  
-  studentId String
-  student   User     @relation(fields: [studentId], references: [id])
-  propertyId String
-  property  Property @relation(fields: [propertyId], references: [id])
+  landlord    User     @relation(fields: [landlordId], references: [id])
 }

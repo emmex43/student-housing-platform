@@ -2,187 +2,101 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-
-// Load Paystack (We keep this for later when you turn on payments)
-const PaystackButton = dynamic(
-  () => import("react-paystack").then((mod) => mod.PaystackButton),
-  { ssr: false }
-);
 
 export default function PropertyDetails() {
   const { id } = useParams();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  const [bookingLoading, setBookingLoading] = useState(false); // New loading state for free booking
-
-  // ⚠️ TOGGLE THIS TO 'FALSE' WHEN YOU WANT TO CHARGE MONEY AGAIN
-  const IS_FREE_TRIAL = true; 
 
   const API_URL = "https://student-housing-platform.onrender.com";
-  const publicKey = "pk_test_1b56ed2843f62835f5c3e40f3f6c47a9620b62d9"; 
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-
     const fetchProperty = async () => {
       try {
         const res = await fetch(`${API_URL}/api/properties/${id}`);
         const data = await res.json();
-        if (res.ok) {
-          setProperty(data);
-        }
+        if (res.ok) setProperty(data);
       } catch (error) {
         console.error("Error:", error);
       } finally {
         setLoading(false);
       }
     };
-
     if (id) fetchProperty();
   }, [id]);
 
-  // ✅ NEW: Handle Booking without Payment
-  const handleFreeBooking = async () => {
-    setBookingLoading(true);
-    try {
-      const res = await fetch(`${API_URL}/api/bookings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studentId: user.id,
-          propertyId: property.id,
-          price: 0, // Recorded as Free
-        }),
-      });
-
-      if (res.ok) {
-        alert("🎉 Booking Successful! Redirecting to your ticket...");
-        window.location.href = "/bookings"; 
-      }
-    } catch (error) {
-      console.error("Booking failed", error);
-      alert("Something went wrong.");
-    } finally {
-      setBookingLoading(false);
-    }
+  // ✅ Helper function to extract YouTube ID from any link
+  const getYouTubeId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
   };
 
-  // Keep this for later (Paid version)
-  const handlePaymentSuccess = async (reference) => {
-    try {
-      const res = await fetch(`${API_URL}/api/bookings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studentId: user.id,
-          propertyId: property.id,
-          price: 2000, 
-        }),
-      });
-
-      if (res.ok) {
-        alert("✅ Payment Successful! Redirecting to your ticket...");
-        window.location.href = "/bookings"; 
-      }
-    } catch (error) {
-      alert("Payment successful, but failed to save receipt.");
-    }
+  const handleWhatsAppClick = () => {
+    const message = `Hello! I am interested in viewing this property on StudentLodge:%0A%0A*${property.title}*%0A📍 ${property.location}%0A💰 ₦${parseInt(property.price).toLocaleString()}%0A%0ACan we schedule a viewing?`;
+    // ✅ Routes to the specific Agent's number stored in the database
+    window.open(`https://wa.me/${property.agentNumber}?text=${message}`, "_blank");
   };
 
-  if (loading) return <div className="p-10 text-center">Loading House Details...</div>;
+  if (loading) return <div className="p-10 text-center text-xl font-bold animate-pulse">Loading Video Tour...</div>;
   if (!property) return <div className="p-10 text-center">House not found.</div>;
 
-  const componentProps = {
-    email: user?.email || "student@example.com",
-    amount: 2000 * 100,
-    metadata: { name: user?.fullName, phone: user?.phone },
-    publicKey,
-    text: "Pay ₦2,000 for Viewing",
-    onSuccess: handlePaymentSuccess,
-    onClose: () => alert("Payment cancelled."),
-  };
+  const youtubeId = getYouTubeId(property.videoUrl);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="p-6 bg-white shadow-sm mb-8">
-        <Link href="/" className="text-2xl font-bold text-green-600">StudentLodge.ng</Link>
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <nav className="p-4 md:p-6 bg-white shadow-sm mb-6 flex justify-center md:justify-start">
+        <Link href="/" className="text-2xl font-black text-green-600 tracking-tight">StudentLodge<span className="text-black">.ng</span></Link>
       </nav>
 
-      <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
-        <div className="mb-6">
-          <span className="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded uppercase">
-            {property.university}
-          </span>
-          <h1 className="text-3xl font-bold text-gray-900 mt-2">{property.title}</h1>
-          <p className="text-gray-500">{property.location}</p>
+      <div className="max-w-5xl mx-auto px-4">
+
+        {/* ✅ THE YOUTUBE VIDEO PLAYER */}
+        <div className="w-full bg-black rounded-2xl overflow-hidden shadow-2xl mb-8 aspect-video relative">
+          {youtubeId ? (
+            <iframe
+              className="absolute top-0 left-0 w-full h-full"
+              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen>
+            </iframe>
+          ) : (
+            <div className="flex items-center justify-center h-full text-white">Video Tour Not Available</div>
+          )}
         </div>
 
-        <img 
-          src={property.images} 
-          alt={property.title} 
-          className="w-full h-96 object-cover rounded-xl mb-8"
-        />
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-6">
+          <div className="md:col-span-2 space-y-6 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
             <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Description</h2>
-              <p className="text-gray-600 leading-relaxed">{property.description}</p>
+              <span className="bg-black text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                {property.university}
+              </span>
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 mt-4 leading-tight">{property.title}</h1>
+              <p className="text-gray-500 mt-2 text-lg flex items-center gap-2">📍 {property.location}</p>
+            </div>
+
+            <hr className="border-gray-100" />
+
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">Property Features</h2>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line text-lg">{property.description}</p>
             </div>
           </div>
 
-          <div className="bg-gray-50 p-6 rounded-xl border h-fit">
-            <p className="text-gray-500 mb-1">Rent per year</p>
-            <p className="text-3xl font-bold text-green-600 mb-6">₦{parseInt(property.price).toLocaleString()}</p>
+          <div className="bg-white p-6 rounded-2xl shadow-xl border-t-4 border-green-600 h-fit sticky top-6">
+            <p className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-1">Rent per year</p>
+            <p className="text-4xl font-black text-gray-900 mb-8">₦{parseInt(property.price).toLocaleString()}</p>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center font-bold text-white">
-                  {property.landlord?.fullName?.charAt(0) || "L"}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">{property.landlord?.fullName || "Landlord"}</p>
-                  {property.landlord?.isVerified ? (
-                    <p className="text-xs text-green-600 font-bold flex items-center gap-1">✅ Verified Owner</p>
-                  ) : (
-                    <p className="text-xs text-gray-400">Unverified Account</p>
-                  )}
-                </div>
-              </div>
-
-              {/* 👇 LOGIC: SHOW FREE BUTTON OR PAYSTACK BUTTON */}
-              {user ? (
-                IS_FREE_TRIAL ? (
-                  <button 
-                    onClick={handleFreeBooking}
-                    disabled={bookingLoading}
-                    className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition shadow-lg animate-pulse"
-                  >
-                    {bookingLoading ? "Processing..." : "🎟️ Book Viewing (FREE)"}
-                  </button>
-                ) : (
-                  <PaystackButton 
-                    className="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition" 
-                    {...componentProps} 
-                  />
-                )
-              ) : (
-                <Link href="/login">
-                    <button className="w-full bg-gray-400 text-white font-bold py-3 rounded-lg">
-                    Login to Book
-                    </button>
-                </Link>
-              )}
-              
-              <button className="w-full border border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-100 transition">
-                Contact Landlord
-              </button>
-            </div>
+            <button
+              onClick={handleWhatsAppClick}
+              className="w-full bg-[#25D366] text-white font-black py-4 rounded-xl hover:bg-[#1DA851] hover:-translate-y-1 transition-all shadow-lg shadow-green-200 flex justify-center items-center gap-2 text-lg"
+            >
+              💬 Chat Agent on WhatsApp
+            </button>
+            <p className="text-center text-xs text-gray-400 mt-4 font-semibold">No signup required. Direct contact.</p>
           </div>
         </div>
       </div>
