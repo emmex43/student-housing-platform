@@ -12,7 +12,8 @@ export default function MyBookings() {
     // 1. Check if user is logged in
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
-      router.push("/login");
+      // Free access - no redirect
+      setLoading(false);
       return;
     }
     const user = JSON.parse(storedUser);

@@ -8,7 +8,8 @@ export default function PropertyDetails() {
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = "https://student-housing-platform.onrender.com";
+  // ⚠️ LOCAL API URL for development
+  const API_URL = "http://localhost:5000";
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -33,6 +34,12 @@ export default function PropertyDetails() {
     return (match && match[2].length === 11) ? match[2] : null;
   };
 
+  // ✅ Helper function to check if URL is a direct video file
+  const isVideoFile = (url) => {
+    if (!url) return false;
+    return url.includes('/uploads/') || url.match(/\.(mp4|mov|avi|webm|mkv)$/i);
+  };
+
   const handleWhatsAppClick = () => {
     const message = `Hello! I am interested in viewing this property on StudentLodge:%0A%0A*${property.title}*%0A📍 ${property.location}%0A💰 ₦${parseInt(property.price).toLocaleString()}%0A%0ACan we schedule a viewing?`;
     // ✅ Routes to the specific Agent's number stored in the database
@@ -43,6 +50,7 @@ export default function PropertyDetails() {
   if (!property) return <div className="p-10 text-center">House not found.</div>;
 
   const youtubeId = getYouTubeId(property.videoUrl);
+  const isUploadedVideo = isVideoFile(property.videoUrl);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -52,7 +60,7 @@ export default function PropertyDetails() {
 
       <div className="max-w-5xl mx-auto px-4">
 
-        {/* ✅ THE YOUTUBE VIDEO PLAYER */}
+        {/* ✅ THE VIDEO PLAYER (YouTube or Uploaded) */}
         <div className="w-full bg-black rounded-2xl overflow-hidden shadow-2xl mb-8 aspect-video relative">
           {youtubeId ? (
             <iframe
@@ -63,6 +71,17 @@ export default function PropertyDetails() {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen>
             </iframe>
+          ) : isUploadedVideo ? (
+            <video
+              className="absolute top-0 left-0 w-full h-full object-cover"
+              controls
+              autoPlay
+              muted
+              loop
+            >
+              <source src={property.videoUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           ) : (
             <div className="flex items-center justify-center h-full text-white">Video Tour Not Available</div>
           )}

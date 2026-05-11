@@ -9,24 +9,24 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [myProperties, setMyProperties] = useState([]);
 
-  // ⚠️ LIVE API URL
-  const API_URL = "https://student-housing-platform.onrender.com";
+  // ⚠️ LOCAL API URL for development
+  const API_URL = "http://localhost:5000";
 
   // ✅ Updated Form State
   const [form, setForm] = useState({
-    title: "", price: "", university: "", location: "", description: "", videoUrl: "", agentNumber: "",
+    title: "", price: "", university: "", location: "", description: "", videoUrl: "", agentNumber: "", videoFile: null,
   });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
       router.push("/login");
-    } else {
-      const currentUser = JSON.parse(storedUser);
-      setUser(currentUser);
-      fetchMyProperties(currentUser.id);
-      setIsLoading(false);
+      return;
     }
+    const currentUser = JSON.parse(storedUser);
+    setUser(currentUser);
+    fetchMyProperties(currentUser.id);
+    setIsLoading(false);
   }, []);
 
   const fetchMyProperties = async (userId) => {
@@ -55,14 +55,47 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-    router.push("/login");
+    router.push("/");
   };
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const handleFileChange = (e) => setForm({ ...form, [e.target.name]: e.target.files[0] });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const dataToSend = { ...form, landlordId: user.id };
+
+    let videoUrl = form.videoUrl;
+
+    // If a video file is uploaded, upload it first
+    if (form.videoFile) {
+      const formData = new FormData();
+      formData.append('video', form.videoFile);
+
+      try {
+        const uploadResponse = await fetch(`${API_URL}/api/upload-video`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (uploadResponse.ok) {
+          const uploadData = await uploadResponse.json();
+          videoUrl = uploadData.videoUrl;
+        } else {
+          alert("Failed to upload video file.");
+          return;
+        }
+      } catch (error) {
+        alert("Error uploading video.");
+        return;
+      }
+    }
+
+    const dataToSend = {
+      ...form,
+      videoUrl: videoUrl,
+      landlordId: user.id
+    };
 
     try {
       const response = await fetch(`${API_URL}/api/properties`, {
@@ -73,7 +106,7 @@ export default function Dashboard() {
 
       if (response.ok) {
         alert("🎉 House Posted Successfully!");
-        setForm({ title: "", price: "", university: "", location: "", description: "", videoUrl: "", agentNumber: "" });
+        setForm({ title: "", price: "", university: "", location: "", description: "", videoUrl: "", agentNumber: "", videoFile: null });
         fetchMyProperties(user.id);
       } else {
         alert("Failed to post house.");
@@ -99,10 +132,38 @@ export default function Dashboard() {
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Post a New House (Video Mode)</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* ✅ NEW: YouTube Link & Agent Number */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input name="videoUrl" value={form.videoUrl} onChange={handleChange} placeholder="Paste YouTube Link Here" className="w-full p-4 border-2 border-red-100 bg-red-50 rounded text-red-900 focus:border-red-500 outline-none" required />
-              <input name="agentNumber" value={form.agentNumber} onChange={handleChange} placeholder="Agent WhatsApp (e.g. 2348012345678)" className="w-full p-4 border-2 border-green-100 bg-green-50 rounded text-green-900 focus:border-green-500 outline-none" required />
+            {/* ✅ Video Options: YouTube Link OR Upload Video File */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  name="videoUrl"
+                  value={form.videoUrl}
+                  onChange={handleChange}
+                  placeholder="Paste YouTube Link Here (optional)"
+                  className="w-full p-4 border-2 border-red-100 bg-red-50 rounded text-red-900 focus:border-red-500 outline-none"
+                />
+                <input
+                  name="agentNumber"
+                  value={form.agentNumber}
+                  onChange={handleChange}
+                  placeholder="Agent WhatsApp (e.g. 2348012345678)"
+                  className="w-full p-4 border-2 border-green-100 bg-green-50 rounded text-green-900 focus:border-green-500 outline-none"
+                  required
+                />
+              </div>
+
+              <div className="text-center text-gray-500 text-sm">OR</div>
+
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
+                <input
+                  type="file"
+                  name="videoFile"
+                  accept="video/*"
+                  onChange={handleFileChange}
+                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                <p className="text-xs text-gray-400 mt-2">Upload a video file (MP4, MOV, etc.) - Max 100MB</p>
+              </div>
             </div>
 
             <input name="title" value={form.title} onChange={handleChange} placeholder="Property Title (e.g. 2 Bedroom Flat)" className="w-full p-3 border rounded" required />

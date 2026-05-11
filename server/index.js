@@ -3,27 +3,74 @@ const cors = require("cors");
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const path = require("path");
 
 const app = express();
 const prisma = new PrismaClient();
 const PORT = 5000;
 
 // Ideally, this key should be in your .env file, but for now, we put it here
-const SECRET_KEY = "super-secret-key-for-student-housing"; 
+const SECRET_KEY = "super-secret-key-for-student-housing";
+
+// Configure multer for video uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only video files are allowed!'), false);
+    }
+  },
+  limits: {
+    fileSize: 100 * 1024 * 1024 // 100MB limit
+  }
+});
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 // 1. TEST ROUTE
 app.get("/", (req, res) => {
   res.send("Student Housing API is running!");
 });
 
-// 2. REGISTER ROUTE (Updated to save Phone Number)
+// 2. VIDEO UPLOAD ROUTE
+app.post("/api/upload-video", upload.single('video'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No video file uploaded" });
+    }
+
+    const videoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    res.status(201).json({
+      message: "Video uploaded successfully",
+      videoUrl: videoUrl,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ message: "Failed to upload video" });
+  }
+});
+
+// 3. REGISTER ROUTE (Updated to save Phone Number)
 app.post("/api/register", async (req, res) => {
   try {
     // 1. Get phone from the request
-    const { email, password, fullName, role, phone } = req.body; 
+    const { email, password, fullName, role, phone } = req.body;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) return res.status(400).json({ message: "User already exists" });
@@ -77,7 +124,7 @@ app.post("/api/login", async (req, res) => {
     });
 
     console.log("✅ Login successful for:", user.fullName);
-    
+
     // 4. Send response
     res.json({ message: "Login successful", token, user });
 
@@ -89,7 +136,7 @@ app.post("/api/login", async (req, res) => {
 // 4. CREATE PROPERTY ROUTE (Landlords only)
 app.post("/api/properties", async (req, res) => {
   try {
-    const { title, description, price, university, location, images, landlordId } = req.body;
+    const { title, description, price, university, location, images, landlordId, videoUrl, agentNumber } = req.body;
 
     // Validation: Ensure all fields are there
     if (!title || !price || !university || !landlordId) {
@@ -106,6 +153,8 @@ app.post("/api/properties", async (req, res) => {
         address: location, // Using location as address for simplicity
         images: images || "https://placehold.co/600x400", // Default image if none provide
         landlordId,
+        videoUrl: videoUrl || "", // Add video URL
+        agentNumber: agentNumber || "", // Add agent number
       },
     });
 
@@ -127,7 +176,7 @@ app.get("/api/properties", async (req, res) => {
     if (location) {
       filter.location = {
         contains: location,
-        mode: "insensitive", 
+        mode: "insensitive",
       };
     }
 
@@ -145,7 +194,7 @@ app.get("/api/properties", async (req, res) => {
 
     const properties = await prisma.property.findMany({
       where: filter,
-      include: { 
+      include: {
         landlord: {
           select: { fullName: true, isVerified: true }
         }
@@ -194,7 +243,7 @@ app.get("/api/users", async (req, res) => {
 app.put("/api/users/:id/verify", async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const updatedUser = await prisma.user.update({
       where: { id },
       data: { isVerified: true },
@@ -235,13 +284,13 @@ app.get("/api/bookings/:userId", async (req, res) => {
     const { userId } = req.params;
     const bookings = await prisma.booking.findMany({
       where: { studentId: userId },
-      include: { 
+      include: {
         property: {
-          include: { 
+          include: {
             landlord: true // <--- THIS is the magic line. Get the owner details!
           }
-        } 
-      }, 
+        }
+      },
     });
     res.json(bookings);
   } catch (error) {
